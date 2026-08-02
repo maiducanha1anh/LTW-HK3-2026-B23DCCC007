@@ -1,0 +1,70 @@
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  fullName: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  icon: string;
+  color: string;
+  type: string;
+  userId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Expense {
+  _id: string;
+  amount: number;
+  expenseDate: string;
+  note: string;
+  categoryId: string | Category;
+  userId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Budget {
+  _id: string;
+  userId: string;
+  month: number;
+  year: number;
+  amount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CurrentBudgetInfo {
+  budgetId: string | null;
+  month: number;
+  year: number;
+  budgetAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  exceededAmount: number;
+  usagePercent: number;
+  status: 'NO_BUDGET' | 'NORMAL' | 'WARNING' | 'EXCEEDED';
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface PaginationInfo {
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+  limit: number;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  pagination: PaginationInfo;
+}
