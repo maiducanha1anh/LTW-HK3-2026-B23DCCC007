@@ -13,9 +13,16 @@ export interface Category {
   icon: string;
   color: string;
   type: string;
-  userId: string;
+  userId?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface CategoryPayload {
+  name: string;
+  icon?: string;
+  color?: string;
+  type?: string;
 }
 
 export interface Expense {
