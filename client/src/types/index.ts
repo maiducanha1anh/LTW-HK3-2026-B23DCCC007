@@ -84,6 +84,31 @@ export interface CurrentBudgetInfo {
   status: 'NO_BUDGET' | 'NORMAL' | 'WARNING' | 'EXCEEDED';
 }
 
+export interface DashboardTopCategory {
+  categoryId: string;
+  categoryName: string;
+  icon: string;
+  color: string;
+  totalAmount: number;
+  expenseCount: number;
+  percentage: number;
+}
+
+export interface DashboardData {
+  month: number;
+  year: number;
+  totalExpenseThisMonth: number;
+  totalExpenseToday: number;
+  expenseCountThisMonth: number;
+  budgetAmount: number;
+  remainingAmount: number;
+  exceededAmount: number;
+  usagePercent: number;
+  status: 'NO_BUDGET' | 'NORMAL' | 'WARNING' | 'EXCEEDED';
+  latestExpenses: Expense[];
+  topCategories: DashboardTopCategory[];
+}
+
 export interface LoginPayload {
   username?: string;
   email?: string;
