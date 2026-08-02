@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { logout } from '../../features/auth/authSlice';
@@ -8,106 +8,159 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.auth.user);
 
+  // State cho Mobile Offcanvas Drawer Sidebar (< 992px)
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Lock body scroll khi mở Mobile Sidebar & hỗ trợ phím ESC
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setIsMobileOpen(false);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isMobileOpen]);
+
+  // Reset mobile sidebar khi thay đổi kích thước màn hình lên >= 992px
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 992) {
+        setIsMobileOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleLogout = () => {
+    setIsMobileOpen(false);
     dispatch(logout());
     navigate('/login');
   };
 
+  const navItems = [
+    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
+    { path: '/categories', icon: '🏷️', label: 'Danh mục' },
+    { path: '/expenses', icon: '💸', label: 'Khoản chi' },
+    { path: '/budgets', icon: '🎯', label: 'Định mức' },
+    { path: '/reports', icon: '📈', label: 'Báo cáo' },
+    { path: '/profile', icon: '👤', label: 'Profile' }
+  ];
+
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
-      {/* Header Navbar */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3 shadow-sm">
-        <NavLink className="navbar-brand font-weight-bold" to="/dashboard">
-          💰 QuanLyChiTieu
-        </NavLink>
-        <div className="ms-auto d-flex align-items-center gap-3">
+      {/* Top Navbar Header */}
+      <header className="navbar navbar-dark bg-dark app-navbar px-3 shadow-sm sticky-top">
+        <div className="d-flex align-items-center gap-2">
+          {/* Hamburger Menu Toggle Button for Mobile (< 992px) */}
+          <button
+            type="button"
+            className="btn btn-outline-light btn-sm d-lg-none me-1"
+            aria-label="Mở Menu điều hướng"
+            aria-expanded={isMobileOpen}
+            aria-controls="mobile-sidebar-offcanvas"
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+          >
+            ☰
+          </button>
+
+          <NavLink className="navbar-brand fw-bold text-white mb-0" to="/dashboard">
+            💰 QuanLyChiTieu
+          </NavLink>
+        </div>
+
+        <div className="ms-auto d-flex align-items-center gap-2 gap-sm-3">
           {user && (
-            <span className="text-light small fw-semibold">
-              👋 Xin chào, {user.fullName || user.username}
+            <span className="text-light small fw-semibold user-name-truncated" title={user.fullName || user.username}>
+              👋 <span className="d-none d-sm-inline">Xin chào, </span>
+              {user.fullName || user.username}
             </span>
           )}
-          <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+          <button
+            className="btn btn-outline-light btn-sm fw-semibold"
+            onClick={handleLogout}
+            title="Đăng xuất"
+          >
             Đăng xuất
           </button>
         </div>
-      </nav>
+      </header>
 
-      {/* Content Body with Sidebar */}
-      <div className="container-fluid flex-grow-1">
-        <div className="row h-100">
-          {/* Sidebar */}
-          <nav className="col-md-3 col-lg-2 d-md-block bg-white sidebar border-end py-4">
-            <div className="position-sticky">
-              <ul className="nav nav-pills flex-column gap-2">
-                <li className="nav-item">
-                  <NavLink
-                    to="/dashboard"
-                    className={({ isActive }) =>
-                      `nav-link ${isActive ? 'active' : 'link-dark'}`
-                    }
-                  >
-                    📊 Dashboard
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/categories"
-                    className={({ isActive }) =>
-                      `nav-link ${isActive ? 'active' : 'link-dark'}`
-                    }
-                  >
-                    🏷️ Danh mục
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/expenses"
-                    className={({ isActive }) =>
-                      `nav-link ${isActive ? 'active' : 'link-dark'}`
-                    }
-                  >
-                    💸 Khoản chi
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/budgets"
-                    className={({ isActive }) =>
-                      `nav-link ${isActive ? 'active' : 'link-dark'}`
-                    }
-                  >
-                    🎯 Định mức
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/reports"
-                    className={({ isActive }) =>
-                      `nav-link ${isActive ? 'active' : 'link-dark'}`
-                    }
-                  >
-                    📈 Báo cáo
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/profile"
-                    className={({ isActive }) =>
-                      `nav-link ${isActive ? 'active' : 'link-dark'}`
-                    }
-                  >
-                    👤 Profile
-                  </NavLink>
-                </li>
-              </ul>
-            </div>
-          </nav>
+      {/* Desktop Sidebar (>= 992px Cố định) */}
+      <aside className="app-sidebar-desktop py-4 px-3" aria-label="Menu điều hướng máy tính">
+        <ul className="nav nav-pills flex-column gap-1 sidebar-nav-item">
+          {navItems.map((item) => (
+            <li key={item.path} className="nav-item">
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? 'active' : ''}`
+                }
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </aside>
 
-          {/* Main Content Area */}
-          <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-            <Outlet />
-          </main>
+      {/* Mobile Backdrop & Offcanvas Drawer (< 992px) */}
+      {isMobileOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <div
+        id="mobile-sidebar-offcanvas"
+        className={`mobile-offcanvas-drawer p-3 ${isMobileOpen ? 'show' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu điều hướng di động"
+      >
+        <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <span className="fw-bold text-primary fs-5">💰 Menu Điều Hướng</span>
+          <button
+            type="button"
+            className="btn-close text-reset"
+            aria-label="Đóng Menu"
+            onClick={() => setIsMobileOpen(false)}
+          ></button>
         </div>
+
+        <ul className="nav nav-pills flex-column gap-1 sidebar-nav-item">
+          {navItems.map((item) => (
+            <li key={item.path} className="nav-item">
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? 'active' : ''}`
+                }
+                onClick={() => setIsMobileOpen(false)}
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Main Content Body */}
+      <div className="main-content-offset flex-grow-1 p-3 p-sm-4">
+        <Outlet />
       </div>
     </div>
   );

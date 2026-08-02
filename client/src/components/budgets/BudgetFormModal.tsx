@@ -103,10 +103,12 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
     <div
       className="modal fade show d-block"
       tabIndex={-1}
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      role="dialog"
+      aria-modal="true"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1050 }}
     >
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content shadow">
+      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div className="modal-content shadow border-0 rounded-3">
           <div className="modal-header">
             <h5 className="modal-title fw-bold">
               {editingBudget ? 'Sửa Định Mức Chi Tiêu' : 'Thiết Lập Định Mức Chi Tiêu'}
@@ -116,6 +118,7 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
               className="btn-close"
               onClick={onClose}
               disabled={submitting}
+              aria-label="Đóng"
             ></button>
           </div>
 
@@ -198,13 +201,13 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
             <div className="modal-footer">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary fw-semibold"
                 onClick={onClose}
                 disabled={submitting}
               >
                 Hủy
               </button>
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
+              <button type="submit" className="btn btn-primary fw-semibold" disabled={submitting}>
                 {submitting ? (
                   <>
                     <span

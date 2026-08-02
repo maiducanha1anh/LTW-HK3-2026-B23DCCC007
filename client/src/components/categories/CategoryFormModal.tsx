@@ -111,10 +111,12 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
     <div
       className="modal fade show d-block"
       tabIndex={-1}
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      role="dialog"
+      aria-modal="true"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1050 }}
     >
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content shadow">
+      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div className="modal-content shadow border-0 rounded-3">
           <div className="modal-header">
             <h5 className="modal-title fw-bold">
               {editingCategory ? 'Sửa Danh Mục' : 'Thêm Danh Mục Mới'}
@@ -124,10 +126,11 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
               className="btn-close"
               onClick={onClose}
               disabled={submitting}
+              aria-label="Đóng"
             ></button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="modal-body">
               {(validationError || error) && (
                 <div className="alert alert-danger py-2 small mb-3" role="alert">
@@ -209,13 +212,13 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
             <div className="modal-footer">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary fw-semibold"
                 onClick={onClose}
                 disabled={submitting}
               >
                 Hủy
               </button>
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
+              <button type="submit" className="btn btn-primary fw-semibold" disabled={submitting}>
                 {submitting ? (
                   <>
                     <span

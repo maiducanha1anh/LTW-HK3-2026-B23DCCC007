@@ -5,6 +5,9 @@ import { store } from './app/store';
 import App from './App.tsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
+import './styles/global.css';
+import './styles/layout.css';
+import './styles/components.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

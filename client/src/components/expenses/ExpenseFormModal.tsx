@@ -64,7 +64,6 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       if (editingExpense) {
         setAmountInput(String(editingExpense.amount));
 
-        // Trích xuất categoryId an toàn (string hoặc populate object)
         const catId =
           typeof editingExpense.categoryId === 'string'
             ? editingExpense.categoryId
@@ -75,7 +74,6 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         setNote(editingExpense.note || '');
       } else {
         setAmountInput('');
-        // Mặc định chọn danh mục đầu tiên nếu có
         setCategoryId(categories.length > 0 ? categories[0]._id : '');
         setExpenseDate(getTodayLocalDateString());
         setNote('');
@@ -123,7 +121,6 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     } else {
       const selectedDate = new Date(expenseDate);
       const today = new Date();
-      // Reset giờ phút giây về 23:59:59 để cho phép chọn ngày hôm nay
       today.setHours(23, 59, 59, 999);
       if (isNaN(selectedDate.getTime())) {
         setDateError('Ngày chi không hợp lệ');
@@ -167,10 +164,12 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     <div
       className="modal fade show d-block"
       tabIndex={-1}
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+      role="dialog"
+      aria-modal="true"
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1050 }}
     >
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content shadow">
+      <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div className="modal-content shadow border-0 rounded-3">
           <div className="modal-header">
             <h5 className="modal-title fw-bold">
               {editingExpense ? '✏️ Sửa Khoản Chi' : '➕ Thêm Khoản Chi Mới'}
@@ -180,6 +179,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               className="btn-close"
               onClick={onClose}
               disabled={submitting}
+              aria-label="Đóng"
             ></button>
           </div>
 
@@ -283,13 +283,13 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             <div className="modal-footer">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary fw-semibold"
                 onClick={onClose}
                 disabled={submitting}
               >
                 Hủy
               </button>
-              <button type="submit" className="btn btn-primary" disabled={submitting}>
+              <button type="submit" className="btn btn-primary fw-semibold" disabled={submitting}>
                 {submitting ? (
                   <>
                     <span

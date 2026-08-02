@@ -1,0 +1,62 @@
+/* Components UI Polish & Responsive Modals/Tables */
+
+/* Card Radius & Shadows */
+.card {
+  border-radius: var(--radius-md);
+}
+
+/* Responsive Table Wrapper & Cell Formatting */
+.table-responsive {
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.table-nowrap-cell {
+  white-space: nowrap;
+}
+
+/* Modal Body Scrollability & Responsive Size */
+.modal-dialog-scrollable .modal-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+  
+  .modal-footer > button {
+    width: 100%;
+  }
+}
+
+/* Badge Polish */
+.badge {
+  border-radius: var(--radius-sm);
+}
+
+/* Recharts Wrapper Styling */
+.chart-container-wrapper {
+  width: 100%;
+  min-height: 280px;
+  position: relative;
+}
