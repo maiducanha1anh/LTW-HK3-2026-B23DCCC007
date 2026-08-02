@@ -109,6 +109,38 @@ export interface DashboardData {
   topCategories: DashboardTopCategory[];
 }
 
+export interface MonthSummaryData {
+  month: number;
+  year: number;
+  totalExpense: number;
+  expenseCount: number;
+  budgetAmount: number;
+  remainingAmount: number;
+  exceededAmount: number;
+  usagePercent: number;
+  status: 'NO_BUDGET' | 'NORMAL' | 'WARNING' | 'EXCEEDED';
+}
+
+export interface CategorySummaryItem {
+  categoryId: string;
+  categoryName: string;
+  icon: string;
+  color: string;
+  totalAmount: number;
+  expenseCount: number;
+  percentage: number;
+}
+
+export interface YearSummaryItem {
+  month: number;
+  budgetAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  exceededAmount: number;
+  usagePercent: number;
+  status: 'NO_BUDGET' | 'NORMAL' | 'WARNING' | 'EXCEEDED';
+}
+
 export interface LoginPayload {
   username?: string;
   email?: string;
