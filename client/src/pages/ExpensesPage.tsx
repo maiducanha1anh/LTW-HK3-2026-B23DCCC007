@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { fetchCategories } from '../features/categories/categorySlice';
 import {
   fetchExpenses,
+  deleteExpenseThunk,
   setKeyword,
   setCategoryFilter,
   setMonth,
@@ -11,11 +13,12 @@ import {
   setSortOrder,
   setPage,
   resetFilters,
-  clearExpenseError
+  clearExpenseMessages
 } from '../features/expenses/expenseSlice';
 import Loading from '../components/common/Loading';
+import ExpenseFormModal from '../components/expenses/ExpenseFormModal';
 import { formatCurrency, formatDate } from '../utils/format';
-import { Category } from '../types';
+import { Category, Expense } from '../types';
 
 const getIconEmoji = (iconName?: string): string => {
   switch (iconName) {
@@ -47,9 +50,19 @@ const ExpensesPage: React.FC = () => {
   const categories = useAppSelector((state) => state.categories.items);
 
   // Expense State & Filters
-  const { items, pagination, filters, loading, error } = useAppSelector(
-    (state) => state.expenses
-  );
+  const {
+    items,
+    pagination,
+    filters,
+    loading,
+    deletingId,
+    error,
+    successMessage
+  } = useAppSelector((state) => state.expenses);
+
+  // Modal local state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   // Local state cho ô tìm kiếm gõ phím (Debounce 400ms)
   const [searchTerm, setSearchTerm] = useState(filters.keyword);
@@ -77,10 +90,60 @@ const ExpensesPage: React.FC = () => {
     dispatch(fetchExpenses());
   }, [dispatch, filters]);
 
+  // Tự ẩn thông báo thành công sau 3 giây
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        dispatch(clearExpenseMessages());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, dispatch]);
+
   // Reset filters
   const handleReset = () => {
     setSearchTerm('');
     dispatch(resetFilters());
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingExpense(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (expense: Expense) => {
+    setEditingExpense(expense);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingExpense(null);
+    dispatch(clearExpenseMessages());
+  };
+
+  const handleModalSuccess = () => {
+    setIsModalOpen(false);
+    setEditingExpense(null);
+    dispatch(fetchExpenses());
+  };
+
+  const handleDelete = (expense: Expense) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa khoản chi này không?')) {
+      dispatch(deleteExpenseThunk(expense._id))
+        .unwrap()
+        .then(() => {
+          // Nếu trang hiện tại chỉ có 1 item và page > 1 -> lùi trang trước
+          if (items.length === 1 && pagination.currentPage > 1) {
+            dispatch(setPage(pagination.currentPage - 1));
+          } else {
+            dispatch(fetchExpenses());
+          }
+        })
+        .catch(() => {
+          // Error handling done by Redux state
+        });
+    }
   };
 
   // Safe Category Renderer
@@ -175,22 +238,38 @@ const ExpensesPage: React.FC = () => {
     );
   };
 
+  const hasNoCategories = categories.length === 0;
+
   return (
     <div>
       {/* Header Bar */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
           <h2 className="fw-bold mb-1">Quản Lý Khoản Chi</h2>
-          <p className="text-muted mb-0">Xem danh sách, tìm kiếm và lọc các khoản chi tiêu</p>
+          <p className="text-muted mb-0">Xem danh sách, tìm kiếm, thêm, sửa và xóa các khoản chi tiêu</p>
         </div>
+
         <button
-          className="btn btn-primary px-3 py-2 fw-semibold disabled"
-          title="Chức năng Thêm khoản chi sẽ ra mắt ở Giai đoạn 2"
-          disabled
+          className="btn btn-primary px-3 py-2 fw-semibold"
+          onClick={handleOpenAddModal}
+          disabled={hasNoCategories}
+          title={hasNoCategories ? 'Cần tạo ít nhất một danh mục trước khi thêm khoản chi' : ''}
         >
-          ➕ Thêm khoản chi (Sắp ra mắt)
+          ➕ Thêm khoản chi
         </button>
       </div>
+
+      {/* Warning Banner: No Category Guard */}
+      {hasNoCategories && (
+        <div className="alert alert-warning d-flex justify-content-between align-items-center mb-4" role="alert">
+          <div>
+            ⚠️ <strong>Chưa có danh mục:</strong> Bạn cần tạo ít nhất một danh mục trước khi thêm khoản chi.
+          </div>
+          <Link to="/categories" className="btn btn-warning btn-sm fw-semibold text-dark">
+            👉 Quản lý danh mục
+          </Link>
+        </div>
+      )}
 
       {/* Filter Toolbar Card */}
       <div className="card shadow-sm border-0 mb-4">
@@ -285,20 +364,32 @@ const ExpensesPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Success Alert */}
+      {successMessage && (
+        <div className="alert alert-success alert-dismissible fade show" role="alert">
+          {successMessage}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => dispatch(clearExpenseMessages())}
+          ></button>
+        </div>
+      )}
+
       {/* Error Alert */}
-      {error && (
+      {error && !isModalOpen && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           {error}
           <button
             type="button"
             className="btn-close"
-            onClick={() => dispatch(clearExpenseError())}
+            onClick={() => dispatch(clearExpenseMessages())}
           ></button>
         </div>
       )}
 
       {/* Table Content Area */}
-      {loading ? (
+      {loading && items.length === 0 ? (
         <Loading />
       ) : items.length === 0 ? (
         /* Empty State */
@@ -347,18 +438,28 @@ const ExpensesPage: React.FC = () => {
                     <td className="text-end">
                       <div className="btn-group btn-group-sm">
                         <button
-                          className="btn btn-outline-secondary disabled"
-                          title="Chức năng Sửa sẽ có ở Giai đoạn 2"
-                          disabled
+                          className="btn btn-outline-primary"
+                          onClick={() => handleOpenEditModal(expense)}
+                          title="Sửa khoản chi"
+                          disabled={deletingId === expense._id}
                         >
                           ✏️
                         </button>
                         <button
-                          className="btn btn-outline-secondary disabled"
-                          title="Chức năng Xóa sẽ có ở Giai đoạn 2"
-                          disabled
+                          className="btn btn-outline-danger"
+                          onClick={() => handleDelete(expense)}
+                          title="Xóa khoản chi"
+                          disabled={deletingId === expense._id}
                         >
-                          🗑️
+                          {deletingId === expense._id ? (
+                            <span
+                              className="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden="true"
+                            ></span>
+                          ) : (
+                            '🗑️'
+                          )}
                         </button>
                       </div>
                     </td>
@@ -372,6 +473,14 @@ const ExpensesPage: React.FC = () => {
           {renderPaginationButtons()}
         </div>
       )}
+
+      {/* Expense Form Modal */}
+      <ExpenseFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        editingExpense={editingExpense}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 };

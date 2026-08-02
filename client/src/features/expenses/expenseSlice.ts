@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Expense, ExpenseQueryParams, PaginationInfo } from '../../types';
+import { Expense, ExpenseFormPayload, ExpenseQueryParams, PaginationInfo } from '../../types';
 import expenseApi from '../../api/expenseApi';
 
 interface ExpenseFiltersState {
@@ -18,7 +18,10 @@ interface ExpenseState {
   pagination: PaginationInfo;
   filters: ExpenseFiltersState;
   loading: boolean;
+  submitting: boolean;
+  deletingId: string | null;
   error: string | null;
+  successMessage: string | null;
 }
 
 const currentDate = new Date();
@@ -44,7 +47,10 @@ const initialState: ExpenseState = {
   },
   filters: initialFilters,
   loading: false,
-  error: null
+  submitting: false,
+  deletingId: null,
+  error: null,
+  successMessage: null
 };
 
 // Async Thunks
@@ -67,6 +73,51 @@ export const fetchExpenses = createAsyncThunk<
   } catch (error: any) {
     const message =
       error.response?.data?.message || error.message || 'Lỗi khi lấy danh sách khoản chi';
+    return rejectWithValue(message);
+  }
+});
+
+export const createExpenseThunk = createAsyncThunk<
+  Expense,
+  ExpenseFormPayload,
+  { rejectValue: string }
+>('expenses/createExpense', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await expenseApi.createExpense(payload);
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || error.message || 'Lỗi khi thêm khoản chi';
+    return rejectWithValue(message);
+  }
+});
+
+export const updateExpenseThunk = createAsyncThunk<
+  Expense,
+  { id: string; payload: ExpenseFormPayload },
+  { rejectValue: string }
+>('expenses/updateExpense', async ({ id, payload }, { rejectWithValue }) => {
+  try {
+    const response = await expenseApi.updateExpense(id, payload);
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || error.message || 'Lỗi khi cập nhật khoản chi';
+    return rejectWithValue(message);
+  }
+});
+
+export const deleteExpenseThunk = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>('expenses/deleteExpense', async (id, { rejectWithValue }) => {
+  try {
+    await expenseApi.deleteExpense(id);
+    return id;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || error.message || 'Lỗi khi xóa khoản chi';
     return rejectWithValue(message);
   }
 });
@@ -115,11 +166,13 @@ const expenseSlice = createSlice({
         limit: 10
       };
     },
-    clearExpenseError: (state) => {
+    clearExpenseMessages: (state) => {
       state.error = null;
+      state.successMessage = null;
     }
   },
   extraReducers: (builder) => {
+    // fetchExpenses
     builder.addCase(fetchExpenses.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -133,6 +186,56 @@ const expenseSlice = createSlice({
       state.loading = false;
       state.error = action.payload || 'Lỗi khi lấy danh sách khoản chi';
     });
+
+    // createExpenseThunk
+    builder.addCase(createExpenseThunk.pending, (state) => {
+      state.submitting = true;
+      state.error = null;
+    });
+    builder.addCase(createExpenseThunk.fulfilled, (state) => {
+      state.submitting = false;
+      state.successMessage = 'Thêm khoản chi thành công';
+    });
+    builder.addCase(createExpenseThunk.rejected, (state, action) => {
+      state.submitting = false;
+      state.error = action.payload || 'Lỗi khi thêm khoản chi';
+    });
+
+    // updateExpenseThunk
+    builder.addCase(updateExpenseThunk.pending, (state) => {
+      state.submitting = true;
+      state.error = null;
+    });
+    builder.addCase(updateExpenseThunk.fulfilled, (state, action) => {
+      state.submitting = false;
+      state.successMessage = 'Cập nhật khoản chi thành công';
+      const index = state.items.findIndex((item) => item._id === action.payload._id);
+      if (index !== -1) {
+        state.items[index] = action.payload;
+      }
+    });
+    builder.addCase(updateExpenseThunk.rejected, (state, action) => {
+      state.submitting = false;
+      state.error = action.payload || 'Lỗi khi cập nhật khoản chi';
+    });
+
+    // deleteExpenseThunk
+    builder.addCase(deleteExpenseThunk.pending, (state, action) => {
+      state.deletingId = action.meta.arg;
+      state.error = null;
+    });
+    builder.addCase(deleteExpenseThunk.fulfilled, (state, action) => {
+      state.deletingId = null;
+      state.successMessage = 'Xóa khoản chi thành công';
+      state.items = state.items.filter((item) => item._id !== action.payload);
+      if (state.pagination.totalItems > 0) {
+        state.pagination.totalItems -= 1;
+      }
+    });
+    builder.addCase(deleteExpenseThunk.rejected, (state, action) => {
+      state.deletingId = null;
+      state.error = action.payload || 'Lỗi khi xóa khoản chi';
+    });
   }
 });
 
@@ -145,7 +248,7 @@ export const {
   setSortOrder,
   setPage,
   resetFilters,
-  clearExpenseError
+  clearExpenseMessages
 } = expenseSlice.actions;
 
 export default expenseSlice.reducer;
