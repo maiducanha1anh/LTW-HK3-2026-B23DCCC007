@@ -29,11 +29,31 @@ export interface Expense {
   _id: string;
   amount: number;
   expenseDate: string;
-  note: string;
+  note?: string;
   categoryId: string | Category;
-  userId: string;
+  userId?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface ExpenseQueryParams {
+  page?: number;
+  limit?: number;
+  month?: number;
+  year?: number;
+  categoryId?: string;
+  keyword?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface ExpenseFormPayload {
+  amount: number;
+  expenseDate: string;
+  note?: string;
+  categoryId: string;
 }
 
 export interface Budget {
@@ -44,6 +64,12 @@ export interface Budget {
   amount: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface BudgetFormPayload {
+  month: number;
+  year: number;
+  amount: number;
 }
 
 export interface CurrentBudgetInfo {
