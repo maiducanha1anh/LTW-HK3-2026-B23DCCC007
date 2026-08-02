@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDatabase } from './config/database';
 import authRoutes from './routes/authRoutes';
+import categoryRoutes from './routes/categoryRoutes';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/categories', categoryRoutes);
 
 const startServer = async (): Promise<void> => {
   await connectDatabase();
