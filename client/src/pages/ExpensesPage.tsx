@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Search,
+  RotateCcw,
+  AlertTriangle,
+  Wallet,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { fetchCategories } from '../features/categories/categorySlice';
@@ -19,31 +30,9 @@ import {
 import ExpenseFormModal from '../components/expenses/ExpenseFormModal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { SkeletonTable } from '../components/common/Skeleton';
+import { renderCategoryIcon } from '../utils/categoryIcon';
 import { formatCurrency, formatDate } from '../utils/format';
 import { Category, Expense } from '../types';
-
-const getIconEmoji = (iconName?: string): string => {
-  switch (iconName) {
-    case 'utensils':
-      return '🍽️';
-    case 'shopping-bag':
-      return '🛍️';
-    case 'film':
-      return '🎬';
-    case 'car':
-      return '🚗';
-    case 'graduation-cap':
-      return '🎓';
-    case 'home':
-      return '🏠';
-    case 'plane':
-      return '✈️';
-    case 'hospital':
-      return '🏥';
-    default:
-      return '🏷️';
-  }
-};
 
 const ExpensesPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -90,7 +79,7 @@ const ExpensesPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm, filters.keyword, dispatch]);
 
-  // Một useEffect duy nhất kích hoạt fetchExpenses khi filters thay đổi
+  // Kích hoạt fetchExpenses khi filters thay đổi
   useEffect(() => {
     dispatch(fetchExpenses());
   }, [dispatch, filters]);
@@ -162,24 +151,22 @@ const ExpensesPage: React.FC = () => {
           <span
             className="d-inline-block rounded-circle"
             style={{
-              width: '10px',
-              height: '10px',
-              backgroundColor: cat.color || '#6c757d'
+              width: '8px',
+              height: '8px',
+              backgroundColor: cat.color || '#64748b'
             }}
           />
-          <span>{getIconEmoji(cat.icon)}</span>
-          <span className="fw-semibold">{cat.name}</span>
+          <span className="text-secondary">{renderCategoryIcon(cat.icon, 'w-4 h-4')}</span>
+          <span className="fw-semibold text-dark">{cat.name}</span>
         </span>
       );
     }
-    return <span className="text-muted fst-italic">Danh mục đã xóa</span>;
+    return <span className="text-muted fst-italic small">Danh mục đã xóa</span>;
   };
 
-  // Tạo mảng năm cho dropdown (Năm hiện tại ± 5)
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
-  // Tính mảng trang hiển thị (Tối đa 5 trang xung quanh currentPage)
   const renderPaginationButtons = () => {
     const { currentPage, totalPages } = pagination;
     if (totalPages <= 1) return null;
@@ -193,7 +180,7 @@ const ExpensesPage: React.FC = () => {
     }
 
     return (
-      <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4 pt-3 border-top">
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 p-3 border-top bg-light rounded-bottom-4">
         <div className="text-muted small">
           Hiển thị trang <span className="fw-bold">{currentPage}</span> /{' '}
           <span className="fw-bold">{totalPages}</span> (Tổng{' '}
@@ -203,11 +190,12 @@ const ExpensesPage: React.FC = () => {
         <ul className="pagination pagination-sm mb-0">
           <li className={`page-item ${currentPage <= 1 || loading ? 'disabled' : ''}`}>
             <button
-              className="page-link"
+              className="page-link d-flex align-items-center gap-1"
               onClick={() => dispatch(setPage(currentPage - 1))}
               disabled={currentPage <= 1 || loading}
             >
-              « Trước
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Trước</span>
             </button>
           </li>
 
@@ -234,11 +222,12 @@ const ExpensesPage: React.FC = () => {
             }`}
           >
             <button
-              className="page-link"
+              className="page-link d-flex align-items-center gap-1"
               onClick={() => dispatch(setPage(currentPage + 1))}
               disabled={currentPage >= totalPages || loading}
             >
-              Sau »
+              <span>Sau</span>
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </li>
         </ul>
@@ -253,8 +242,8 @@ const ExpensesPage: React.FC = () => {
       {/* Header Bar */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-          <h2 className="fw-bold mb-1">Quản Lý Khoản Chi</h2>
-          <p className="text-muted mb-0">Xem danh sách, tìm kiếm, thêm, sửa và xóa các khoản chi tiêu</p>
+          <h2 className="fw-bold mb-1 text-dark">Quản Lý Khoản Chi</h2>
+          <p className="text-muted mb-0 small">Xem danh sách, tìm kiếm, thêm, sửa và xóa các khoản chi tiêu</p>
         </div>
 
         <button
@@ -263,35 +252,42 @@ const ExpensesPage: React.FC = () => {
           disabled={hasNoCategories}
           title={hasNoCategories ? 'Cần tạo ít nhất một danh mục trước khi thêm khoản chi' : ''}
         >
-          ➕ Thêm khoản chi
+          <Plus className="w-4 h-4" />
+          <span>Thêm khoản chi</span>
         </button>
       </div>
 
       {/* Warning Banner: No Category Guard */}
       {hasNoCategories && (
-        <div className="alert alert-warning d-flex justify-content-between align-items-center mb-4" role="alert">
-          <div>
-            ⚠️ <strong>Chưa có danh mục:</strong> Bạn cần tạo ít nhất một danh mục trước khi thêm khoản chi.
+        <div className="alert alert-warning d-flex justify-content-between align-items-center mb-4 rounded-3" role="alert">
+          <div className="d-flex align-items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-warning" />
+            <span><strong>Chưa có danh mục:</strong> Bạn cần tạo ít nhất một danh mục trước khi thêm khoản chi.</span>
           </div>
           <Link to="/categories" className="btn btn-warning btn-sm fw-semibold text-dark">
-            👉 Quản lý danh mục
+            Quản lý danh mục
           </Link>
         </div>
       )}
 
-      {/* Filter Toolbar Card (Luôn giữ hiển thị khi loading) */}
-      <div className="card shadow-sm border-0 mb-4">
+      {/* Filter Toolbar Card */}
+      <div className="card shadow-sm border-0 mb-4 rounded-4">
         <div className="card-body p-3">
           <div className="row g-2 align-items-center">
             {/* Keyword Search */}
             <div className="col-12 col-md-3">
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                placeholder="🔍 Tìm theo ghi chú..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <div className="input-group input-group-sm">
+                <span className="input-group-text bg-white text-muted border-end-0">
+                  <Search className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  className="form-control border-start-0 ps-0"
+                  placeholder="Tìm theo ghi chú..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
 
             {/* Category Filter */}
@@ -304,7 +300,7 @@ const ExpensesPage: React.FC = () => {
                 <option value="">Tất cả danh mục</option>
                 {categories.map((cat) => (
                   <option key={cat._id} value={cat._id}>
-                    {getIconEmoji(cat.icon)} {cat.name}
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -351,21 +347,22 @@ const ExpensesPage: React.FC = () => {
                   dispatch(setSortOrder(so as 'asc' | 'desc'));
                 }}
               >
-                <option value="expenseDate-desc">📅 Ngày: Mới nhất</option>
-                <option value="expenseDate-asc">📅 Ngày: Cũ nhất</option>
-                <option value="amount-desc">💵 Số tiền: Cao nhất</option>
-                <option value="amount-asc">💵 Số tiền: Thấp nhất</option>
+                <option value="expenseDate-desc">Ngày: Mới nhất</option>
+                <option value="expenseDate-asc">Ngày: Cũ nhất</option>
+                <option value="amount-desc">Số tiền: Cao nhất</option>
+                <option value="amount-asc">Số tiền: Thấp nhất</option>
               </select>
             </div>
 
             {/* Reset Button */}
             <div className="col-12 col-sm-6 col-md-1">
               <button
-                className="btn btn-outline-secondary btn-sm w-100"
+                className="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center justify-content-center gap-1"
                 onClick={handleReset}
                 title="Đặt lại bộ lọc"
               >
-                🔄 Reset
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
               </button>
             </div>
           </div>
@@ -374,7 +371,7 @@ const ExpensesPage: React.FC = () => {
 
       {/* Error Alert */}
       {error && !isModalOpen && (
-        <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <div className="alert alert-danger alert-dismissible fade show mb-4 rounded-3" role="alert">
           {error}
           <button
             type="button"
@@ -384,65 +381,55 @@ const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Table Content Area: Skeleton 5 dòng khi nạp dữ liệu lần đầu */}
+      {/* Table Content Area */}
       {loading && items.length === 0 ? (
         <SkeletonTable rows={5} cols={5} />
       ) : items.length === 0 ? (
         /* Empty State */
-        <div className="card shadow-sm border-0 p-5 text-center my-4">
-          <div className="display-4 mb-3">💸</div>
+        <div className="card shadow-sm border-0 p-5 text-center my-4 rounded-4">
+          <Wallet className="w-12 h-12 text-muted mb-3 mx-auto" />
           <h4 className="text-muted mb-2">Chưa có khoản chi nào phù hợp</h4>
-          <p className="text-muted mb-0">Thử thay đổi bộ lọc tìm kiếm, tháng hoặc năm.</p>
+          <p className="text-muted mb-0 small">Thử thay đổi bộ lọc tìm kiếm, tháng hoặc năm.</p>
         </div>
       ) : (
         /* Expense Table */
-        <div className="card shadow-sm border-0">
+        <div className="card shadow-sm border-0 rounded-4">
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
-              <thead className="table-light">
+              <thead>
                 <tr>
-                  <th scope="col" style={{ width: '15%' }}>
-                    Ngày chi
-                  </th>
-                  <th scope="col" style={{ width: '25%' }}>
-                    Danh mục
-                  </th>
-                  <th scope="col" style={{ width: '20%' }}>
-                    Số tiền
-                  </th>
-                  <th scope="col" style={{ width: '25%' }}>
-                    Ghi chú
-                  </th>
-                  <th scope="col" style={{ width: '15%' }} className="text-end">
-                    Thao tác
-                  </th>
+                  <th scope="col" style={{ width: '15%' }}>NGÀY CHI</th>
+                  <th scope="col" style={{ width: '25%' }}>DANH MỤC</th>
+                  <th scope="col" style={{ width: '20%' }}>SỐ TIỀN</th>
+                  <th scope="col" style={{ width: '25%' }}>GHI CHÚ</th>
+                  <th scope="col" style={{ width: '15%' }} className="text-end">THAO TÁC</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((expense) => (
                   <tr key={expense._id}>
-                    <td className="fw-medium text-secondary">
+                    <td className="fw-medium text-secondary table-nowrap-cell">
                       {formatDate(expense.expenseDate)}
                     </td>
                     <td>{renderCategoryInfo(expense.categoryId)}</td>
-                    <td className="fw-bold text-danger">
+                    <td className="fw-bold text-danger table-nowrap-cell">
                       {formatCurrency(expense.amount)}
                     </td>
-                    <td className="text-muted text-truncate" style={{ maxWidth: '200px' }}>
+                    <td className="text-muted small text-truncate" style={{ maxWidth: '200px' }}>
                       {expense.note || '-'}
                     </td>
-                    <td className="text-end">
+                    <td className="text-end table-nowrap-cell">
                       <div className="btn-group btn-group-sm">
                         <button
-                          className="btn btn-outline-primary"
+                          className="btn btn-outline-primary btn-sm"
                           onClick={() => handleOpenEditModal(expense)}
                           title="Sửa khoản chi"
                           disabled={deletingId === expense._id}
                         >
-                          ✏️
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          className="btn btn-outline-danger"
+                          className="btn btn-outline-danger btn-sm"
                           onClick={() => promptDeleteExpense(expense)}
                           title="Xóa khoản chi"
                           disabled={deletingId === expense._id}
@@ -454,7 +441,7 @@ const ExpensesPage: React.FC = () => {
                               aria-hidden="true"
                             ></span>
                           ) : (
-                            '🗑️'
+                            <Trash2 className="w-3.5 h-3.5" />
                           )}
                         </button>
                       </div>

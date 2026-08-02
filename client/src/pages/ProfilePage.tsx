@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  UserRound,
+  Camera,
+  Trash2,
+  Save,
+  LogOut,
+  ShieldCheck,
+  BarChart3,
+  Info
+} from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { logout } from '../features/auth/authSlice';
@@ -226,28 +236,29 @@ const ProfilePage: React.FC = () => {
     <div>
       {/* Header Bar */}
       <div className="mb-4">
-        <h2 className="fw-bold mb-1">👤 Thông Tin Cá Nhân</h2>
-        <p className="text-muted mb-0">Quản lý hồ sơ người dùng và cài đặt bảo mật tài khoản</p>
+        <h2 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+          <UserRound className="w-7 h-7 text-primary" />
+          <span>Thông Tin Cá Nhân</span>
+        </h2>
+        <p className="text-muted mb-0 small">Quản lý hồ sơ người dùng và cài đặt bảo mật tài khoản</p>
       </div>
 
       <div className="row g-4">
-        {/* ========================================================================= */}
         {/* CỘT TRÁI: AVATAR & BẢO MẬT */}
-        {/* ========================================================================= */}
         <div className="col-12 col-lg-4">
           {/* Card Avatar */}
-          <div className="card shadow-sm border-0 rounded-3 text-center p-4 mb-4">
+          <div className="card shadow-sm border-0 rounded-4 text-center p-4 mb-4">
             <div className="d-flex justify-content-center mb-3">
               {avatar ? (
                 <img
                   src={avatar}
                   alt="Profile Avatar"
-                  className="rounded-circle border border-3 border-primary shadow-sm object-fit-cover"
+                  className="rounded-circle border border-4 border-white shadow-sm object-fit-cover"
                   style={{ width: '160px', height: '160px' }}
                 />
               ) : (
                 <div
-                  className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center border border-3 border-light shadow-sm font-weight-bold"
+                  className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center border border-4 border-white shadow-sm fw-bold"
                   style={{ width: '160px', height: '160px', fontSize: '64px' }}
                 >
                   {getInitialLetter()}
@@ -255,11 +266,11 @@ const ProfilePage: React.FC = () => {
               )}
             </div>
 
-            <h5 className="fw-bold mb-1">{fullName || user?.fullName || user?.username}</h5>
+            <h5 className="fw-bold mb-1 text-dark">{fullName || user?.fullName || user?.username}</h5>
             <p className="text-muted small mb-3">ID: {getShortId()}</p>
 
             {avatarError && (
-              <div className="alert alert-danger py-1 small mb-3" role="alert">
+              <div className="alert alert-danger py-1 small mb-3 rounded-3" role="alert">
                 {avatarError}
               </div>
             )}
@@ -277,14 +288,16 @@ const ProfilePage: React.FC = () => {
                 className="btn btn-outline-primary btn-sm px-3 fw-semibold"
                 onClick={() => fileInputRef.current?.click()}
               >
-                📷 Đổi ảnh
+                <Camera className="w-4 h-4" />
+                <span>Đổi ảnh</span>
               </button>
               {avatar && (
                 <button
                   className="btn btn-outline-danger btn-sm px-3 fw-semibold"
                   onClick={promptRemoveAvatar}
                 >
-                  🗑️ Xóa ảnh
+                  <Trash2 className="w-4 h-4" />
+                  <span>Xóa ảnh</span>
                 </button>
               )}
             </div>
@@ -294,44 +307,49 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* Card Bảo mật & Phiên đăng nhập */}
-          <div className="card shadow-sm border-0 rounded-3 p-4">
-            <h5 className="fw-bold mb-3 text-primary">🔒 Bảo Mật Tài Khoản</h5>
+          <div className="card shadow-sm border-0 rounded-4 p-4">
+            <h5 className="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              <span>Bảo Mật Tài Khoản</span>
+            </h5>
             <div className="mb-3">
-              <label className="text-muted small fw-semibold d-block mb-1">Username</label>
+              <label className="text-muted small fw-bold d-block mb-1">Username</label>
               <div className="fw-bold text-dark">{user?.username || '-'}</div>
             </div>
 
             <div className="mb-3">
-              <label className="text-muted small fw-semibold d-block mb-1">Email</label>
+              <label className="text-muted small fw-bold d-block mb-1">Email</label>
               <div className="fw-bold text-dark">{user?.email || '-'}</div>
             </div>
 
             <div className="mb-4">
-              <label className="text-muted small fw-semibold d-block mb-1">Trạng thái phiên</label>
-              <div className="badge bg-success px-2 py-1">
-                ● Phiên đăng nhập đang hoạt động
+              <label className="text-muted small fw-bold d-block mb-1">Trạng thái phiên</label>
+              <div className="badge-status-normal px-3 py-1 rounded-pill d-inline-block">
+                ● Phiên đang hoạt động
               </div>
             </div>
 
             <button className="btn btn-danger w-100 fw-semibold" onClick={handleLogout}>
-              🚪 Đăng xuất khỏi thiết bị
+              <LogOut className="w-4 h-4" />
+              <span>Đăng xuất khỏi thiết bị</span>
             </button>
           </div>
         </div>
 
-        {/* ========================================================================= */}
         {/* CỘT PHẢI: FORM THÔNG TIN CÁ NHÂN & THỐNG KÊ TÀI KHOẢN */}
-        {/* ========================================================================= */}
         <div className="col-12 col-lg-8">
           {/* Card Thông tin cá nhân */}
-          <div className="card shadow-sm border-0 rounded-3 mb-4">
+          <div className="card shadow-sm border-0 rounded-4 mb-4">
             <div className="card-header bg-white border-0 pt-4 px-4 pb-0">
-              <h5 className="fw-bold mb-0 text-primary">📝 Thông Tin Chi Tiết Hồ Sơ</h5>
+              <h5 className="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                <UserRound className="w-5 h-5 text-primary" />
+                <span>Thông Tin Chi Tiết Hồ Sơ</span>
+              </h5>
             </div>
 
             <div className="card-body p-4">
               {validationError && (
-                <div className="alert alert-danger py-2 small mb-3" role="alert">
+                <div className="alert alert-danger py-2 small mb-3 rounded-3" role="alert">
                   {validationError}
                 </div>
               )}
@@ -434,53 +452,60 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="alert alert-light border small text-muted mb-4">
-                  💡 <strong>Ghi chú:</strong> Thông tin cá nhân bổ sung và ảnh đại diện hiện được lưu an toàn tại bộ nhớ thiết bị (localStorage). Khi Backend hỗ trợ API cập nhật Profile, dữ liệu sẽ được tự động đồng bộ lên cơ sở dữ liệu.
+                <div className="alert alert-light border small text-muted mb-4 rounded-3 d-flex align-items-center gap-2">
+                  <Info className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span>
+                    Thông tin cá nhân bổ sung và ảnh đại diện hiện được lưu an toàn tại bộ nhớ thiết bị (localStorage). Khi Backend hỗ trợ API cập nhật Profile, dữ liệu sẽ được tự động đồng bộ lên cơ sở dữ liệu.
+                  </span>
                 </div>
 
                 <button type="submit" className="btn btn-primary px-4 fw-semibold">
-                  💾 Lưu thông tin
+                  <Save className="w-4 h-4" />
+                  <span>Lưu thông tin</span>
                 </button>
               </form>
             </div>
           </div>
 
           {/* Card Thống kê tài khoản */}
-          <div className="card shadow-sm border-0 rounded-3">
+          <div className="card shadow-sm border-0 rounded-4">
             <div className="card-header bg-white border-0 pt-4 px-4 pb-0">
-              <h5 className="fw-bold mb-0 text-success">📊 Thống Kê Tài Khoản</h5>
+              <h5 className="fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-success" />
+                <span>Thống Kê Tài Khoản</span>
+              </h5>
             </div>
 
             <div className="card-body p-4">
               <div className="row text-center g-3">
                 <div className="col-6 col-md-3">
-                  <div className="p-3 border rounded bg-light">
+                  <div className="p-3 border rounded-3 bg-light">
                     <div className="text-muted small">Danh mục</div>
-                    <div className="fw-bold text-dark fs-5">{categories.length}</div>
+                    <div className="fw-bold text-dark fs-5 mt-1">{categories.length}</div>
                   </div>
                 </div>
 
                 <div className="col-6 col-md-3">
-                  <div className="p-3 border rounded bg-light">
+                  <div className="p-3 border rounded-3 bg-light">
                     <div className="text-muted small">Khoản chi</div>
-                    <div className="fw-bold text-danger fs-5">{totalExpenseCount}</div>
+                    <div className="fw-bold text-danger fs-5 mt-1">{totalExpenseCount}</div>
                   </div>
                 </div>
 
                 <div className="col-6 col-md-3">
-                  <div className="p-3 border rounded bg-light">
+                  <div className="p-3 border rounded-3 bg-light">
                     <div className="text-muted small">Tổng định mức</div>
-                    <div className="fw-bold text-primary fs-5">
+                    <div className="fw-bold text-primary fs-5 mt-1">
                       {formatCurrency(totalBudgetSum)}
                     </div>
                   </div>
                 </div>
 
                 <div className="col-6 col-md-3">
-                  <div className="p-3 border rounded bg-light">
+                  <div className="p-3 border rounded-3 bg-light">
                     <div className="text-muted small">Trạng thái</div>
                     <div className="mt-1">
-                      <span className="badge bg-success">● Đang hoạt động</span>
+                      <span className="badge-status-normal px-2 py-1 rounded-pill small">● Đang hoạt động</span>
                     </div>
                   </div>
                 </div>

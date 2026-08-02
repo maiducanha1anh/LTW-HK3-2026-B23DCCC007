@@ -169,10 +169,10 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1050 }}
     >
       <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div className="modal-content shadow border-0 rounded-3">
+        <div className="modal-content shadow border-0 rounded-4">
           <div className="modal-header">
             <h5 className="modal-title fw-bold">
-              {editingExpense ? '✏️ Sửa Khoản Chi' : '➕ Thêm Khoản Chi Mới'}
+              {editingExpense ? 'Sửa Khoản Chi' : 'Thêm Khoản Chi Mới'}
             </h5>
             <button
               type="button"
@@ -187,7 +187,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             <div className="modal-body">
               {/* Backend Error Alert */}
               {error && (
-                <div className="alert alert-danger py-2 small mb-3" role="alert">
+                <div className="alert alert-danger py-2 small mb-3 rounded-3" role="alert">
                   {error}
                 </div>
               )}

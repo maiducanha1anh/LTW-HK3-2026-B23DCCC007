@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { LogIn, Eye, EyeOff, User, Lock } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { loginUser, clearAuthError } from '../features/auth/authSlice';
+import Logo from '../components/common/Logo';
 
 const LoginPage: React.FC = () => {
   const [account, setAccount] = useState('');
@@ -56,15 +58,17 @@ const LoginPage: React.FC = () => {
     <div className="container min-vh-100 d-flex justify-content-center align-items-center py-5">
       <div className="row w-100 justify-content-center">
         <div className="col-12 col-md-8 col-lg-5">
-          <div className="card shadow-sm border-0 rounded-3">
+          <div className="card shadow border-0 rounded-4">
             <div className="card-body p-4 p-sm-5">
               <div className="text-center mb-4">
-                <h2 className="fw-bold text-primary mb-2">💰 Quản Lý Chi Tiêu</h2>
-                <p className="text-muted">Đăng nhập tài khoản của bạn</p>
+                <div className="d-flex justify-content-center mb-3">
+                  <Logo size={44} />
+                </div>
+                <p className="text-muted small mb-0">Đăng nhập tài khoản của bạn để tiếp tục</p>
               </div>
 
               {(validationError || error) && (
-                <div className="alert alert-danger py-2 small" role="alert">
+                <div className="alert alert-danger py-2 small rounded-3 mb-4" role="alert">
                   {validationError || error}
                 </div>
               )}
@@ -74,15 +78,20 @@ const LoginPage: React.FC = () => {
                   <label className="form-label fw-semibold" htmlFor="accountInput">
                     Tài khoản (Username hoặc Email)
                   </label>
-                  <input
-                    id="accountInput"
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập username hoặc email..."
-                    value={account}
-                    onChange={handleAccountChange}
-                    disabled={loading}
-                  />
+                  <div className="input-group">
+                    <span className="input-group-text bg-white text-muted border-end-0">
+                      <User className="w-4 h-4" />
+                    </span>
+                    <input
+                      id="accountInput"
+                      type="text"
+                      className="form-control border-start-0 ps-0"
+                      placeholder="Nhập username hoặc email..."
+                      value={account}
+                      onChange={handleAccountChange}
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 <div className="mb-4">
@@ -90,10 +99,13 @@ const LoginPage: React.FC = () => {
                     Mật khẩu
                   </label>
                   <div className="input-group">
+                    <span className="input-group-text bg-white text-muted border-end-0">
+                      <Lock className="w-4 h-4" />
+                    </span>
                     <input
                       id="passwordInput"
                       type={showPassword ? 'text' : 'password'}
-                      className="form-control"
+                      className="form-control border-start-0 border-end-0 ps-0"
                       placeholder="Nhập mật khẩu..."
                       value={password}
                       onChange={handlePasswordChange}
@@ -101,18 +113,18 @@ const LoginPage: React.FC = () => {
                     />
                     <button
                       type="button"
-                      className="btn btn-outline-secondary"
+                      className="btn btn-outline-secondary bg-white text-muted border-start-0"
                       onClick={() => setShowPassword(!showPassword)}
                       tabIndex={-1}
                     >
-                      {showPassword ? '👁️ Ẩn' : '👁️ Hiện'}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-100 py-2 fw-semibold mb-3"
+                  className="btn btn-primary w-100 py-2.5 fw-semibold mb-4 rounded-3"
                   disabled={loading}
                 >
                   {loading ? (
@@ -125,13 +137,16 @@ const LoginPage: React.FC = () => {
                       Đang xử lý...
                     </>
                   ) : (
-                    'Đăng Nhập'
+                    <>
+                      <LogIn className="w-4 h-4 me-1" />
+                      <span>Đăng Nhập</span>
+                    </>
                   )}
                 </button>
 
-                <div className="text-center">
+                <div className="text-center border-top pt-3">
                   <span className="text-muted small me-2">Chưa có tài khoản?</span>
-                  <Link to="/register" className="small text-decoration-none fw-semibold">
+                  <Link to="/register" className="small text-decoration-none fw-bold text-success">
                     Đăng ký ngay
                   </Link>
                 </div>

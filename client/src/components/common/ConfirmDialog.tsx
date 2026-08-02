@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { AlertTriangle, Info, Trash2 } from 'lucide-react';
 
 interface ConfirmDialogProps {
   show: boolean;
@@ -58,11 +59,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const getIconHeader = () => {
     switch (variant) {
       case 'warning':
-        return '⚠️';
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       case 'primary':
-        return 'ℹ️';
+        return <Info className="w-5 h-5 text-primary" />;
       default:
-        return '🗑️';
+        return <Trash2 className="w-5 h-5 text-danger" />;
     }
   };
 
@@ -88,10 +89,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         style={{ zIndex: 1055 }}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content shadow border-0 rounded-3">
+          <div className="modal-content shadow border-0 rounded-4">
             <div className="modal-header border-0 pb-0">
               <h5 className="modal-title fw-bold d-flex align-items-center gap-2" id="confirm-dialog-title">
-                <span>{getIconHeader()}</span>
+                {getIconHeader()}
                 <span>{title}</span>
               </h5>
               <button

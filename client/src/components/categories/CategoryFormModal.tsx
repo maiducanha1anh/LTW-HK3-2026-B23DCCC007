@@ -16,15 +16,15 @@ interface CategoryFormModalProps {
 const HEX_COLOR_REGEX = /^#([0-9A-Fa-f]{3}){1,2}$/;
 
 const PRESET_ICONS = [
-  { name: 'tag', label: '🏷️ Thẻ' },
-  { name: 'utensils', label: '🍽️ Ăn uống' },
-  { name: 'shopping-bag', label: '🛍️ Mua sắm' },
-  { name: 'film', label: '🎬 Giải trí' },
-  { name: 'car', label: '🚗 Đi lại' },
-  { name: 'graduation-cap', label: '🎓 Học tập' },
-  { name: 'home', label: '🏠 Nhà cửa' },
-  { name: 'plane', label: '✈️ Du lịch' },
-  { name: 'hospital', label: '🏥 Sức khỏe' }
+  { name: 'tag', label: 'Thẻ' },
+  { name: 'utensils', label: 'Ăn uống' },
+  { name: 'shopping-bag', label: 'Mua sắm' },
+  { name: 'film', label: 'Giải trí' },
+  { name: 'car', label: 'Đi lại' },
+  { name: 'graduation-cap', label: 'Học tập' },
+  { name: 'home', label: 'Nhà cửa' },
+  { name: 'plane', label: 'Du lịch' },
+  { name: 'hospital', label: 'Sức khỏe' }
 ];
 
 const PRESET_COLORS = [
@@ -116,7 +116,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1050 }}
     >
       <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div className="modal-content shadow border-0 rounded-3">
+        <div className="modal-content shadow border-0 rounded-4">
           <div className="modal-header">
             <h5 className="modal-title fw-bold">
               {editingCategory ? 'Sửa Danh Mục' : 'Thêm Danh Mục Mới'}
@@ -133,7 +133,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
           <form onSubmit={handleSubmit} noValidate>
             <div className="modal-body">
               {(validationError || error) && (
-                <div className="alert alert-danger py-2 small mb-3" role="alert">
+                <div className="alert alert-danger py-2 small mb-3 rounded-3" role="alert">
                   {validationError || error}
                 </div>
               )}
