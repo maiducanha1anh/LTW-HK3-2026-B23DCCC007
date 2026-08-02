@@ -5,6 +5,13 @@ export interface IUser extends Document {
   email: string;
   password: string;
   fullName: string;
+  phone?: string;
+  gender?: 'male' | 'female' | 'other';
+  birthDate?: Date;
+  address?: string;
+  occupation?: string;
+  bio?: string;
+  avatar?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +40,39 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: [true, 'Họ và tên là bắt buộc'],
       trim: true
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other', ''],
+      default: ''
+    },
+    birthDate: {
+      type: Date,
+      default: null
+    },
+    address: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    occupation: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    bio: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    avatar: {
+      type: String,
+      default: ''
     }
   },
   {

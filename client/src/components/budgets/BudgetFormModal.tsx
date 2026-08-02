@@ -53,14 +53,19 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
     e.preventDefault();
 
     if (!amountInput.trim()) {
-      setValidationError('Vui lòng nhập định mức chi tiêu');
+      setValidationError('Số tiền phải lớn hơn 0');
       return;
     }
 
     const parsedAmount = Number(amountInput);
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-      setValidationError('Định mức phải là một số hợp lệ và lớn hơn 0');
+      setValidationError('Số tiền phải lớn hơn 0');
+      return;
+    }
+
+    if (parsedAmount > 10000000) {
+      setValidationError('Số tiền không được vượt quá 10.000.000 VND');
       return;
     }
 
@@ -114,7 +119,7 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
             ></button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="modal-body">
               {(validationError || error) && (
                 <div className="alert alert-danger py-2 small mb-3" role="alert">
@@ -170,8 +175,9 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
                 </label>
                 <input
                   type="number"
-                  min="1"
-                  step="1000"
+                  min={1}
+                  max={10000000}
+                  step={1}
                   className="form-control"
                   placeholder="Ví dụ: 5000000"
                   value={amountInput}
@@ -184,7 +190,7 @@ const BudgetFormModal: React.FC<BudgetFormModalProps> = ({
                   autoFocus
                 />
                 <div className="form-text">
-                  Hạn mức tối đa bạn dự kiến chi trong tháng này.
+                  Hạn mức tối đa từ 1 đến 10.000.000 VND.
                 </div>
               </div>
             </div>
