@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import expenseRoutes from './routes/expenseRoutes';
 import budgetRoutes from './routes/budgetRoutes';
+import reportRoutes from './routes/reportRoutes';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/reports', reportRoutes);
 
 const startServer = async (): Promise<void> => {
   await connectDatabase();
