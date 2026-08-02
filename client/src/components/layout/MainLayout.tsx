@@ -1,11 +1,15 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { logout } from '../../features/auth/authSlice';
 
 const MainLayout: React.FC = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const user = useAppSelector((state) => state.auth.user);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -16,7 +20,12 @@ const MainLayout: React.FC = () => {
         <NavLink className="navbar-brand font-weight-bold" to="/dashboard">
           💰 QuanLyChiTieu
         </NavLink>
-        <div className="ms-auto d-flex align-items-center">
+        <div className="ms-auto d-flex align-items-center gap-3">
+          {user && (
+            <span className="text-light small fw-semibold">
+              👋 Xin chào, {user.fullName || user.username}
+            </span>
+          )}
           <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
             Đăng xuất
           </button>

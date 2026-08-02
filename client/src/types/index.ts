@@ -51,6 +51,24 @@ export interface CurrentBudgetInfo {
   status: 'NO_BUDGET' | 'NORMAL' | 'WARNING' | 'EXCEEDED';
 }
 
+export interface LoginPayload {
+  username?: string;
+  email?: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface AuthResponseData {
+  token: string;
+  user: User;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
