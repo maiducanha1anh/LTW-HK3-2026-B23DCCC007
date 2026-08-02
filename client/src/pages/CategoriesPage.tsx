@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
   fetchCategories,
@@ -6,7 +7,8 @@ import {
   clearCategoryMessages
 } from '../features/categories/categorySlice';
 import CategoryFormModal from '../components/categories/CategoryFormModal';
-import Loading from '../components/common/Loading';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { SkeletonCard } from '../components/common/Skeleton';
 import { Category } from '../types';
 
 const getIconEmoji = (iconName: string): string => {
@@ -41,17 +43,21 @@ const CategoriesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
+  // State cho ConfirmDialog
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // Tự động clear successMessage sau 3 giây
+  // Hiển thị Toast khi có successMessage
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        dispatch(clearCategoryMessages());
-      }, 3000);
-      return () => clearTimeout(timer);
+      toast.success(successMessage);
+      dispatch(clearCategoryMessages());
     }
   }, [successMessage, dispatch]);
 
@@ -67,11 +73,16 @@ const CategoriesPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?`)) {
-      dispatch(clearCategoryMessages());
-      await dispatch(deleteCategory(id));
-    }
+  const promptDeleteCategory = (id: string, name: string) => {
+    dispatch(clearCategoryMessages());
+    setDeleteConfirmTarget({ id, name });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmTarget) return;
+    const { id } = deleteConfirmTarget;
+    await dispatch(deleteCategory(id));
+    setDeleteConfirmTarget(null);
   };
 
   return (
@@ -87,21 +98,9 @@ const CategoriesPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Thông báo thành công */}
-      {successMessage && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {successMessage}
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => dispatch(clearCategoryMessages())}
-          ></button>
-        </div>
-      )}
-
       {/* Thông báo lỗi trang (Fetch hoặc Delete) */}
       {error && !isModalOpen && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
           {error}
           <button
             type="button"
@@ -111,9 +110,15 @@ const CategoriesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Trang đang tải */}
-      {loading ? (
-        <Loading />
+      {/* Trang đang tải lần đầu: Hiển thị 6 Skeleton Cards */}
+      {loading && items.length === 0 ? (
+        <div className="row g-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="col-12 col-sm-6 col-md-4 col-lg-3">
+              <SkeletonCard />
+            </div>
+          ))}
+        </div>
       ) : items.length === 0 ? (
         /* Empty State */
         <div className="card shadow-sm border-0 p-5 text-center my-4">
@@ -162,7 +167,7 @@ const CategoriesPage: React.FC = () => {
                     </button>
                     <button
                       className="btn btn-outline-danger btn-sm flex-fill"
-                      onClick={() => handleDelete(category._id, category.name)}
+                      onClick={() => promptDeleteCategory(category._id, category.name)}
                       disabled={deletingId === category._id}
                     >
                       {deletingId === category._id ? (
@@ -188,6 +193,19 @@ const CategoriesPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingCategory={editingCategory}
+      />
+
+      {/* Confirm Dialog Xóa Category */}
+      <ConfirmDialog
+        show={!!deleteConfirmTarget}
+        title="Xác Nhận Xóa Danh Mục"
+        message={`Bạn có chắc chắn muốn xóa danh mục "${deleteConfirmTarget?.name || ''}" không? Hàng loạt khoản chi thuộc danh mục này có thể bị ảnh hưởng.`}
+        confirmText="Xóa Danh Mục"
+        cancelText="Hủy"
+        variant="danger"
+        loading={!!deletingId}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteConfirmTarget(null)}
       />
     </div>
   );

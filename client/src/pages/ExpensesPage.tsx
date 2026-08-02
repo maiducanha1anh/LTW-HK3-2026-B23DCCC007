@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { fetchCategories } from '../features/categories/categorySlice';
 import {
@@ -15,8 +16,9 @@ import {
   resetFilters,
   clearExpenseMessages
 } from '../features/expenses/expenseSlice';
-import Loading from '../components/common/Loading';
 import ExpenseFormModal from '../components/expenses/ExpenseFormModal';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { SkeletonTable } from '../components/common/Skeleton';
 import { formatCurrency, formatDate } from '../utils/format';
 import { Category, Expense } from '../types';
 
@@ -64,6 +66,9 @@ const ExpensesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
+  // Confirm Dialog delete target state
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<Expense | null>(null);
+
   // Local state cho ô tìm kiếm gõ phím (Debounce 400ms)
   const [searchTerm, setSearchTerm] = useState(filters.keyword);
 
@@ -90,13 +95,11 @@ const ExpensesPage: React.FC = () => {
     dispatch(fetchExpenses());
   }, [dispatch, filters]);
 
-  // Tự ẩn thông báo thành công sau 3 giây
+  // Hiển thị Toast khi có successMessage
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        dispatch(clearExpenseMessages());
-      }, 3000);
-      return () => clearTimeout(timer);
+      toast.success(successMessage);
+      dispatch(clearExpenseMessages());
     }
   }, [successMessage, dispatch]);
 
@@ -128,22 +131,27 @@ const ExpensesPage: React.FC = () => {
     dispatch(fetchExpenses());
   };
 
-  const handleDelete = (expense: Expense) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa khoản chi này không?')) {
-      dispatch(deleteExpenseThunk(expense._id))
-        .unwrap()
-        .then(() => {
-          // Nếu trang hiện tại chỉ có 1 item và page > 1 -> lùi trang trước
-          if (items.length === 1 && pagination.currentPage > 1) {
-            dispatch(setPage(pagination.currentPage - 1));
-          } else {
-            dispatch(fetchExpenses());
-          }
-        })
-        .catch(() => {
-          // Error handling done by Redux state
-        });
-    }
+  const promptDeleteExpense = (expense: Expense) => {
+    dispatch(clearExpenseMessages());
+    setDeleteConfirmTarget(expense);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteConfirmTarget) return;
+
+    dispatch(deleteExpenseThunk(deleteConfirmTarget._id))
+      .unwrap()
+      .then(() => {
+        setDeleteConfirmTarget(null);
+        if (items.length === 1 && pagination.currentPage > 1) {
+          dispatch(setPage(pagination.currentPage - 1));
+        } else {
+          dispatch(fetchExpenses());
+        }
+      })
+      .catch(() => {
+        setDeleteConfirmTarget(null);
+      });
   };
 
   // Safe Category Renderer
@@ -271,7 +279,7 @@ const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Filter Toolbar Card */}
+      {/* Filter Toolbar Card (Luôn giữ hiển thị khi loading) */}
       <div className="card shadow-sm border-0 mb-4">
         <div className="card-body p-3">
           <div className="row g-2 align-items-center">
@@ -364,21 +372,9 @@ const ExpensesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Success Alert */}
-      {successMessage && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {successMessage}
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => dispatch(clearExpenseMessages())}
-          ></button>
-        </div>
-      )}
-
       {/* Error Alert */}
       {error && !isModalOpen && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
           {error}
           <button
             type="button"
@@ -388,9 +384,9 @@ const ExpensesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Table Content Area */}
+      {/* Table Content Area: Skeleton 5 dòng khi nạp dữ liệu lần đầu */}
       {loading && items.length === 0 ? (
-        <Loading />
+        <SkeletonTable rows={5} cols={5} />
       ) : items.length === 0 ? (
         /* Empty State */
         <div className="card shadow-sm border-0 p-5 text-center my-4">
@@ -447,7 +443,7 @@ const ExpensesPage: React.FC = () => {
                         </button>
                         <button
                           className="btn btn-outline-danger"
-                          onClick={() => handleDelete(expense)}
+                          onClick={() => promptDeleteExpense(expense)}
                           title="Xóa khoản chi"
                           disabled={deletingId === expense._id}
                         >
@@ -480,6 +476,19 @@ const ExpensesPage: React.FC = () => {
         onClose={handleCloseModal}
         editingExpense={editingExpense}
         onSuccess={handleModalSuccess}
+      />
+
+      {/* Confirm Dialog Xóa Expense */}
+      <ConfirmDialog
+        show={!!deleteConfirmTarget}
+        title="Xác Nhận Xóa Khoản Chi"
+        message={`Bạn có chắc chắn muốn xóa khoản chi ${formatCurrency(deleteConfirmTarget?.amount || 0)} (${formatDate(deleteConfirmTarget?.expenseDate || '')}) không?`}
+        confirmText="Xóa Khoản Chi"
+        cancelText="Hủy"
+        variant="danger"
+        loading={!!deletingId}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteConfirmTarget(null)}
       />
     </div>
   );

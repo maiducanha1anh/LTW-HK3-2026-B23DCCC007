@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { fetchCurrentUser, setInitialized } from './features/auth/authSlice';
 import AppRoutes from './routes/AppRoutes';
@@ -26,7 +29,20 @@ function AppContent() {
     );
   }
 
-  return <AppRoutes />;
+  return (
+    <>
+      <AppRoutes />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+      />
+    </>
+  );
 }
 
 function App() {

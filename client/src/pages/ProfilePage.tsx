@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { logout } from '../features/auth/authSlice';
 import { fetchCategories } from '../features/categories/categorySlice';
 import { fetchExpenses } from '../features/expenses/expenseSlice';
 import { fetchBudgets } from '../features/budgets/budgetSlice';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { SkeletonCard } from '../components/common/Skeleton';
 import { formatCurrency, formatDate } from '../utils/format';
 
 const ProfilePage: React.FC = () => {
@@ -31,7 +34,9 @@ const ProfilePage: React.FC = () => {
 
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // ConfirmDialog delete avatar state
+  const [showDeleteAvatarConfirm, setShowDeleteAvatarConfirm] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -114,12 +119,17 @@ const ProfilePage: React.FC = () => {
       if (user?.id) {
         localStorage.setItem(`profile_avatar_${user.id}`, base64Data);
       }
+      toast.success('Tải ảnh đại diện thành công!');
     };
     reader.readAsDataURL(file);
   };
 
   // Remove Avatar Handler
-  const handleRemoveAvatar = () => {
+  const promptRemoveAvatar = () => {
+    setShowDeleteAvatarConfirm(true);
+  };
+
+  const handleConfirmRemoveAvatar = () => {
     setAvatar(null);
     setAvatarError(null);
     if (user?.id) {
@@ -128,13 +138,14 @@ const ProfilePage: React.FC = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    setShowDeleteAvatarConfirm(false);
+    toast.success('Đã xóa ảnh đại diện.');
   };
 
   // Save Profile Handler
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
-    setSuccessMessage(null);
 
     const trimmedName = fullName.trim();
     if (!trimmedName) {
@@ -174,12 +185,12 @@ const ProfilePage: React.FC = () => {
       localStorage.setItem(`profile_extra_${user.id}`, JSON.stringify(extraData));
     }
 
-    setSuccessMessage('Cập nhật thông tin thành công.');
-    setTimeout(() => setSuccessMessage(null), 3000);
+    toast.success('Cập nhật thông tin thành công.');
   };
 
   const handleLogout = () => {
     dispatch(logout());
+    toast.info('Đã đăng xuất tài khoản.');
     navigate('/login');
   };
 
@@ -195,6 +206,21 @@ const ProfilePage: React.FC = () => {
 
   const totalExpenseCount = expenses.pagination.totalItems || expenses.items.length;
   const totalBudgetSum = budgets.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+  if (!user) {
+    return (
+      <div className="row g-4">
+        <div className="col-12 col-lg-4">
+          <SkeletonCard className="mb-4" />
+          <SkeletonCard />
+        </div>
+        <div className="col-12 col-lg-8">
+          <SkeletonCard className="mb-4" />
+          <SkeletonCard />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -256,7 +282,7 @@ const ProfilePage: React.FC = () => {
               {avatar && (
                 <button
                   className="btn btn-outline-danger btn-sm px-3 fw-semibold"
-                  onClick={handleRemoveAvatar}
+                  onClick={promptRemoveAvatar}
                 >
                   🗑️ Xóa ảnh
                 </button>
@@ -304,12 +330,6 @@ const ProfilePage: React.FC = () => {
             </div>
 
             <div className="card-body p-4">
-              {successMessage && (
-                <div className="alert alert-success alert-dismissible fade show" role="alert">
-                  {successMessage}
-                </div>
-              )}
-
               {validationError && (
                 <div className="alert alert-danger py-2 small mb-3" role="alert">
                   {validationError}
@@ -476,6 +496,18 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirm Dialog Xóa Avatar */}
+      <ConfirmDialog
+        show={showDeleteAvatarConfirm}
+        title="Xác Nhận Xóa Ảnh Đại Diện"
+        message="Bạn có chắc chắn muốn xóa ảnh đại diện không? Ảnh sẽ quay về dạng chữ cái mặc định."
+        confirmText="Xóa Ảnh"
+        cancelText="Hủy"
+        variant="danger"
+        onConfirm={handleConfirmRemoveAvatar}
+        onCancel={() => setShowDeleteAvatarConfirm(false)}
+      />
     </div>
   );
 };

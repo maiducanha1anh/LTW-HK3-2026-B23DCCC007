@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { loginUser, clearAuthError } from '../features/auth/authSlice';
 
@@ -44,6 +45,7 @@ const LoginPage: React.FC = () => {
 
     try {
       await dispatch(loginUser({ account: account.trim(), password })).unwrap();
+      toast.success('Đăng nhập thành công!');
       navigate('/dashboard');
     } catch {
       // Backend error is stored in Redux error state and displayed below
@@ -67,7 +69,7 @@ const LoginPage: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-3">
                   <label className="form-label fw-semibold" htmlFor="accountInput">
                     Tài khoản (Username hoặc Email)

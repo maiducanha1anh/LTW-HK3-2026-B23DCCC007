@@ -18,7 +18,11 @@ import {
   fetchCategorySummary,
   fetchYearSummary
 } from '../features/reports/reportSlice';
-import Loading from '../components/common/Loading';
+import {
+  SkeletonCard,
+  SkeletonChart,
+  SkeletonTable
+} from '../components/common/Skeleton';
 import { formatCurrency } from '../utils/format';
 
 const getIconEmoji = (iconName?: string): string => {
@@ -225,7 +229,13 @@ const ReportsPage: React.FC = () => {
 
           {/* Month Summary Content */}
           {loadingMonth && !monthSummary ? (
-            <Loading />
+            <div className="row g-3 mb-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="col-12 col-sm-6 col-lg-3">
+                  <SkeletonCard />
+                </div>
+              ))}
+            </div>
           ) : monthSummary ? (
             <div>
               {/* 4 Stat Cards Month */}
@@ -335,7 +345,14 @@ const ReportsPage: React.FC = () => {
             )}
 
             {loadingCategory ? (
-              <Loading />
+              <div className="row g-4">
+                <div className="col-12 col-md-6">
+                  <SkeletonChart height="300px" />
+                </div>
+                <div className="col-12 col-md-6">
+                  <SkeletonTable rows={4} cols={4} />
+                </div>
+              </div>
             ) : categorySummary.length === 0 ? (
               <div className="text-center py-4 text-muted bg-light rounded">
                 <div className="fs-3 mb-2">🏷️</div>
@@ -468,7 +485,19 @@ const ReportsPage: React.FC = () => {
           )}
 
           {loadingYear && yearSummary.length === 0 ? (
-            <Loading />
+            <div>
+              <div className="row g-3 mb-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="col-12 col-sm-6 col-lg-3">
+                    <SkeletonCard />
+                  </div>
+                ))}
+              </div>
+              <div className="mb-4">
+                <SkeletonChart height="320px" />
+              </div>
+              <SkeletonTable rows={12} cols={7} />
+            </div>
           ) : (
             <div>
               {/* 4 Stat Cards Year Summary */}

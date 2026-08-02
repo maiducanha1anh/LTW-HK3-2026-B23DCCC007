@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { fetchDashboard, clearReportError } from '../features/reports/reportSlice';
-import Loading from '../components/common/Loading';
+import { SkeletonCard, SkeletonTable, SkeletonList } from '../components/common/Skeleton';
 import { formatCurrency, formatDate } from '../utils/format';
 import { Category } from '../types';
 
@@ -122,9 +122,30 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* Loading State */}
+      {/* Loading State: Skeletons */}
       {loading && !dashboard ? (
-        <Loading />
+        <div>
+          <div className="row g-3 mb-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="col-12 col-sm-6 col-lg-3">
+                <SkeletonCard />
+              </div>
+            ))}
+          </div>
+
+          <div className="mb-4">
+            <SkeletonCard />
+          </div>
+
+          <div className="row g-4">
+            <div className="col-12 col-lg-7">
+              <SkeletonTable rows={5} cols={4} />
+            </div>
+            <div className="col-12 col-lg-5">
+              <SkeletonList count={4} />
+            </div>
+          </div>
+        </div>
       ) : dashboard ? (
         <div>
           {/* 4 Stat Cards Row */}

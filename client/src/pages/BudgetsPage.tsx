@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
   fetchBudgets,
@@ -7,7 +8,8 @@ import {
   clearBudgetMessages
 } from '../features/budgets/budgetSlice';
 import BudgetFormModal from '../components/budgets/BudgetFormModal';
-import Loading from '../components/common/Loading';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { SkeletonCard, SkeletonTable } from '../components/common/Skeleton';
 import { formatCurrency, formatDate } from '../utils/format';
 import { Budget } from '../types';
 
@@ -45,18 +47,23 @@ const BudgetsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
+  // State cho ConfirmDialog
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{
+    id: string;
+    month: number;
+    year: number;
+  } | null>(null);
+
   useEffect(() => {
     dispatch(fetchBudgets());
     dispatch(fetchCurrentBudget());
   }, [dispatch]);
 
-  // Tự động clear successMessage sau 3 giây
+  // Hiển thị Toast khi có successMessage
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        dispatch(clearBudgetMessages());
-      }, 3000);
-      return () => clearTimeout(timer);
+      toast.success(successMessage);
+      dispatch(clearBudgetMessages());
     }
   }, [successMessage, dispatch]);
 
@@ -72,11 +79,16 @@ const BudgetsPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id: string, month: number, year: number) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa định mức Tháng ${month}/${year}?`)) {
-      dispatch(clearBudgetMessages());
-      await dispatch(deleteBudget(id));
-    }
+  const promptDeleteBudget = (id: string, month: number, year: number) => {
+    dispatch(clearBudgetMessages());
+    setDeleteConfirmTarget({ id, month, year });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmTarget) return;
+    const { id } = deleteConfirmTarget;
+    await dispatch(deleteBudget(id));
+    setDeleteConfirmTarget(null);
   };
 
   return (
@@ -95,21 +107,9 @@ const BudgetsPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Thông báo thành công */}
-      {successMessage && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
-          {successMessage}
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => dispatch(clearBudgetMessages())}
-          ></button>
-        </div>
-      )}
-
       {/* Thông báo lỗi trang (Fetch hoặc Delete) */}
       {error && !isModalOpen && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <div className="alert alert-danger alert-dismissible fade show mb-4" role="alert">
           {error}
           <button
             type="button"
@@ -120,7 +120,11 @@ const BudgetsPage: React.FC = () => {
       )}
 
       {/* Current Budget Summary Card */}
-      {currentBudget && (
+      {loading && !currentBudget ? (
+        <div className="mb-4">
+          <SkeletonCard />
+        </div>
+      ) : currentBudget ? (
         <div className="card shadow-sm border-0 mb-4 bg-white rounded-3">
           <div className="card-body p-4">
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -201,11 +205,11 @@ const BudgetsPage: React.FC = () => {
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Main Content Area */}
-      {loading ? (
-        <Loading />
+      {loading && items.length === 0 ? (
+        <SkeletonTable rows={4} cols={4} />
       ) : items.length === 0 ? (
         /* Empty State */
         <div className="card shadow-sm border-0 p-5 text-center my-4">
@@ -257,7 +261,7 @@ const BudgetsPage: React.FC = () => {
                         </button>
                         <button
                           className="btn btn-outline-danger"
-                          onClick={() => handleDelete(budget._id, budget.month, budget.year)}
+                          onClick={() => promptDeleteBudget(budget._id, budget.month, budget.year)}
                           disabled={deletingId === budget._id}
                         >
                           {deletingId === budget._id ? (
@@ -285,6 +289,19 @@ const BudgetsPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         editingBudget={editingBudget}
+      />
+
+      {/* Confirm Dialog Xóa Budget */}
+      <ConfirmDialog
+        show={!!deleteConfirmTarget}
+        title="Xác Nhận Xóa Định Mức"
+        message={`Bạn có chắc chắn muốn xóa định mức Tháng ${deleteConfirmTarget?.month || ''}/${deleteConfirmTarget?.year || ''} không?`}
+        confirmText="Xóa Định Mức"
+        cancelText="Hủy"
+        variant="danger"
+        loading={!!deletingId}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteConfirmTarget(null)}
       />
     </div>
   );
